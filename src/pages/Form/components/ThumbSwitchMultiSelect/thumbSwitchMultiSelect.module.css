@@ -1,0 +1,15 @@
+.wrapper {
+  @apply inline-block;
+}
+
+.wrapper--block {
+  @apply block w-full;
+}
+
+.tags {
+  @apply flex gap-3 mt-4 flex-wrap justify-center md:justify-start;
+}
+
+.tag {
+  @apply bg-orange-400 text-white rounded py-1.5 px-3 inline-block text-[14px] font-medium;
+}

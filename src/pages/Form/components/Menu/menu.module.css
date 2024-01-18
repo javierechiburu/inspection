@@ -1,0 +1,27 @@
+.mobile {
+  @apply bg-primary-600 rounded flex text-white lg:hidden h-10;
+
+  > div {
+    @apply flex-1 flex flex-col items-center justify-center text-[12px] uppercase font-medium;
+  }
+}
+
+.arrow {
+  @apply w-12 text-white flex items-center justify-center border-primary-700 first:border-r last:border-l;
+
+  > svg {
+    @apply h-[18px] w-[18px];
+  }
+
+  &:last-child > svg {
+    @apply rotate-180;
+  }
+
+  &:disabled {
+    @apply text-primary-700;
+  }
+}
+
+.desktop {
+  @apply hidden lg:flex bg-primary-600 text-white max-w-[256px] p-2 rounded leading-none flex-col gap-2;
+}

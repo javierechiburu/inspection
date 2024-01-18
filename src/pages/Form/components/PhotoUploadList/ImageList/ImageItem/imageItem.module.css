@@ -1,0 +1,16 @@
+.wrapper {
+  @apply aspect-[4/3] p-1 rounded relative bg-zinc-600 md:p-2 cursor-pointer;
+  @apply hover:bg-zinc-700 transition-colors;
+}
+
+.image {
+  @apply rounded overflow-hidden block h-full relative text-white text-[14px] font-medium pointer-events-none;
+
+  > img {
+    @apply z-10 relative h-full w-full object-cover;
+  }
+}
+
+.loading {
+  @apply absolute inset-0 flex items-center justify-center text-zinc-400 bg-zinc-700;
+}

@@ -1,0 +1,13 @@
+.button {
+  @apply flex text-[14px] font-medium uppercase py-2.5 pr-2.5 bg-primary-700 rounded w-full hover:bg-primary-500 transition-colors;
+
+  > span {
+    &:first-child {
+      @apply w-8;
+    }
+  }
+}
+
+.active {
+  @apply bg-primary-500;
+}

@@ -1,0 +1,7 @@
+.list {
+  @apply flex flex-col w-80;
+}
+
+.margin {
+  @apply mt-5;
+}

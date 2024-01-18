@@ -1,0 +1,11 @@
+.wrapper {
+  @apply flex flex-col gap-2.5;
+}
+
+.container {
+  @apply flex flex-col lg:flex-row gap-2.5 lg:items-start;
+}
+
+.content {
+  @apply flex-1;
+}

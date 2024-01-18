@@ -1,0 +1,10 @@
+.list {
+  @apply mt-4 ml-4 list-inside list-disc;
+}
+
+.actions {
+  @apply flex;
+  button {
+    @apply mx-2;
+  }
+}

@@ -1,0 +1,255 @@
+image: atlassian/default-image:4
+
+options:
+  docker: true
+  size: 2x
+
+definitions:
+  services:
+    docker:
+      memory: 4096
+
+  steps:
+    - step: &lint-test
+        name: Lint, Test
+        caches:
+          - nextcache
+          - node
+        script:
+          - npm install --global yarn
+          - yarn install
+          - yarn lint
+          - yarn types
+
+    - step: &sonar-test
+        name: sonarqube analysis
+        image: sonarsource/sonar-scanner-cli:latest
+        script:
+          - sonar-scanner -Dsonar.projectKey=${SERVICE_SLUG} -Dsonar.projectName=${SERVICE_SLUG}
+
+    - step: &update-patch-version
+        name: Update patch version
+        script:
+          - npm version --no-commit-hooks patch -m "Update to v%s [skip ci]"
+        artifacts:
+          - package.json
+          - .git/**
+
+    - step: &update-minor-version
+        name: Update minor version
+        script:
+          - npm version --no-commit-hooks minor -m "Update to v%s [skip ci]"
+        artifacts:
+          - package.json
+          - .git/**
+
+    - step: &update-major-version
+        name: Update major version
+        script:
+          - npm version --no-commit-hooks major -m "Update to v%s [skip ci]"
+        artifacts:
+          - package.json
+          - .git/**
+
+    - step: &set-env-vars
+        name: Set environment variables
+        script:
+          # - wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+          # - echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+          # - apt update && apt install vault
+          # - setcap cap_ipc_lock= /usr/bin/vault
+          # - vault login -method=userpass username=${VAULT_USERNAME} password=${VAULT_PASSWORD}
+          # - vault kv get -format=json ${VAULT_PATH} | jq '.data.data' > env.json
+          # - jq -r 'to_entries|map("export \(.key)=\(.value|tostring)")|.[]' env.json >> env.sh
+          # - jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|.[]' env.json >> .env
+          - echo "export ENV=$ENV" >> env.sh
+          - echo "export ARGOCD_APPNAME=$ARGOCD_APPNAME" >> env.sh
+          - echo "export HELM_CHART_VERSION=$HELM_CHART_VERSION" >> env.sh
+          - echo "export LIBRARY_URL=$LIBRARY_URL" > .env.production
+          - echo "export INSPECTION_URL=$INSPECTION_URL" >> .env.production
+          - echo "export UI_URL=$UI_URL" >> .env.production
+        artifacts:
+          - env.sh
+          - .env
+          - .env.production
+
+    - step: &push-new-version
+        name: Push new package version
+        script:
+          - echo $GAC_PRIVATE_KEY > ~/.ssh/id_rsa.tmp
+          - base64 -d ~/.ssh/id_rsa.tmp > ~/.ssh/id_rsa
+          - chmod 600 ~/.ssh/id_rsa
+          - git push $BITBUCKET_GIT_SSH_ORIGIN $BITBUCKET_BRANCH --tags --no-verify
+
+    - step: &push-last-commit-to-dev
+        name: Push last commit to develop branch
+        script:
+          - echo ${GAC_PRIVATE_KEY} > ~/.ssh/id_rsa.tmp
+          - base64 -d ~/.ssh/id_rsa.tmp > ~/.ssh/id_rsa
+          - chmod 600 ~/.ssh/id_rsa
+          - DEV_BRANCH="${BITBUCKET_DEV_BRANCH:-develop}"
+          - git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+          - git fetch --all
+          - git checkout ${DEV_BRANCH}
+          - git rebase ${BITBUCKET_BRANCH}
+          - git push $BITBUCKET_GIT_SSH_ORIGIN ${DEV_BRANCH} --force --no-verify
+
+    - step: &update-and-build
+        name: Build a new version
+        caches:
+          - node
+        script:
+          - apt update
+          - source env.sh
+          - NEW_VERSION=$(node -p "require('./package.json').version")
+          - |
+            if [[ "$BITBUCKET_BRANCH" == develop ]]; then
+              echo "export IMAGE_VERSION=${NEW_VERSION}-alpha" >> env.sh
+            elif [[ "$BITBUCKET_BRANCH" == staging ]]; then
+              echo "export IMAGE_VERSION=${NEW_VERSION}-beta" >> env.sh
+            elif [[ "$BITBUCKET_BRANCH" == master ]]; then
+              echo "export IMAGE_VERSION=${NEW_VERSION}" >> env.sh
+            else
+              echo "export IMAGE_VERSION=${NEW_VERSION}-pre-alpha" >> env.sh
+            fi
+        artifacts:
+          - env.sh
+          - dist/**
+
+    - step: &publish-image
+        name: Publish Docker image
+        #caches:
+          #- docker DO NOT use docker cache. Image size is over 1GB and it will compress it just to not push it later
+          #- nextcache
+        services:
+          - docker
+        size: 2x # Double resources available for this step.
+        script:
+          - source env.sh
+          - DOCKER_REGISTRY=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${SERVICE_SLUG}
+          - echo "Publishing image ${DOCKER_REGISTRY}:${IMAGE_VERSION}"
+          # - docker build -t ${SERVICE_SLUG}:${IMAGE_VERSION} --build-arg NPM_TOKEN=${NPM_TOKEN} .
+          - docker build -t ${SERVICE_SLUG}:${IMAGE_VERSION} .
+          - pipe: atlassian/aws-ecr-push-image:2.0.0
+            variables:
+              AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID_STG}
+              AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY_STG}
+              AWS_DEFAULT_REGION: ${AWS_REGION}
+              IMAGE_NAME: ${SERVICE_SLUG}
+              TAGS: ${IMAGE_VERSION}
+        artifacts:
+          - env.sh
+          - .env
+
+    - step: &deploy
+        name: Deploy on Kubernetes
+        image: craftech/ci-tools:kube-tools-latest
+        script:
+          - source env.sh
+          - argocd login $ARGOCD_DOMAIN_PORT --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD
+          - argocd app set $ARGOCD_APPNAME --plugin-env IMAGE_TAG=${IMAGE_VERSION} --plugin-env HELM_CHART_VERSION=${HELM_CHART_VERSION} --plugin-env ENV=${ENV}
+          - argocd app sync $ARGOCD_APPNAME
+        artifacts:
+          - env.sh
+
+pipelines:
+  # pull-requests:
+  #   '**': # this runs as default for any branch not elsewhere defined
+  #     - step: *lint-test
+
+  branches: # pipelines that run automatically on a commit to a branch
+    # develop:
+    #   - step: *lint-test
+
+    develop:
+      # - step: *lint-test
+      - step:
+          <<: *set-env-vars
+          deployment: development
+      # - step: *update-minor-version
+      # - step: *push-new-version
+      # - step: *push-last-commit-to-dev
+      - step:
+          <<: *update-and-build
+      - step: *publish-image
+      - step:
+          <<: *deploy
+          name: Deploy Development
+
+    staging:
+      # - step: *lint-test
+      - step:
+          <<: *set-env-vars
+          deployment: staging
+      # - step: *update-minor-version
+      # - step: *push-new-version
+      # - step: *push-last-commit-to-dev
+      - step:
+          <<: *update-and-build
+      - step: *publish-image
+      - step:
+          <<: *deploy
+          name: Deploy Staging
+
+    master:
+      # - step: *lint-test
+      - step:
+          <<: *set-env-vars
+          deployment: production
+      - step:
+          <<: *update-and-build
+      - step: *publish-image
+      - step:
+          <<: *deploy
+          name: Deploy production
+
+    # hotfix/*: # any branch with a hotfix prefix
+    #   - step: *lint-test
+    #   - step: *update-patch-version
+    #   - step: *push-new-version
+
+  # custom: # pipelines that can only be triggered manually
+  #   push-major-version:
+  #     - step: *lint-test
+  #     - step: *update-major-version
+  #     - step: *push-new-version
+
+  #   push-minor-version:
+  #     - step: *lint-test
+  #     - step: *update-minor-version
+  #     - step: *push-new-version
+
+  #   push-patch-version:
+  #     - step: *lint-test
+  #     - step: *update-patch-version
+  #     - step: *push-new-version
+
+  #   push-last-commit-to-dev:
+  #     - step: *lint-test
+  #     - step: *push-last-commit-to-dev
+
+  #   deploy-staging:
+  #     - step: *lint-test
+  #     - step:
+  #         <<: *set-env-vars
+  #         deployment: staging
+  #     - step:
+  #         <<: *update-and-build
+  #         deployment: staging
+  #     - step: *publish-image
+  #     - step:
+  #         <<: *deploy
+  #         name: Deploy Staging
+
+  #   deploy-production:
+  #     - step: *lint-test
+  #     - step:
+  #         <<: *set-env-vars
+  #         deployment: production
+  #     - step:
+  #         <<: *update-and-build
+  #         deployment: production
+  #     - step: *publish-image
+  #     - step:
+  #         <<: *deploy
+  #         name: Deploy production

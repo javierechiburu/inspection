@@ -1,0 +1,8 @@
+.field {
+  > label {
+    @apply text-[14px] font-medium block pb-2 leading-5;
+    > span {
+      @apply ml-1.5 text-red-700;
+    }
+  }
+}

@@ -1,0 +1,28 @@
+.wrapper {
+  @apply aspect-[4/3] p-1 rounded relative bg-zinc-600 md:p-2;
+}
+
+.image {
+  @apply rounded overflow-hidden block h-full relative text-white text-[14px] font-medium;
+
+  > img {
+    @apply z-10 relative h-full w-full object-cover;
+  }
+}
+
+.loading {
+  @apply absolute inset-0 flex items-center justify-center text-zinc-400 bg-zinc-700;
+}
+
+.title {
+  @apply absolute inset-x-0 bottom-0 z-20 px-1 py-1.5 md:pb-2 md:pt-1.5;
+  @apply text-white text-center text-[12px] font-medium bg-zinc-600 rounded-b md:text-[13px];
+}
+
+button.delete {
+  @apply absolute -top-1 -right-1 z-10 rounded-full bg-primary-600 hover:bg-primary-500 cursor-pointer text-white p-1;
+
+  > svg {
+    @apply h-4 w-4;
+  }
+}

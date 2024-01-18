@@ -1,0 +1,47 @@
+.modal {
+  @apply min-w-[20rem] max-w-xl;
+}
+
+.container {
+  @apply mb-4 aspect-[4/3] overflow-hidden;
+}
+
+.image {
+  @apply rounded p-2 bg-zinc-600 w-full h-full overflow-hidden relative;
+
+  > img {
+    @apply relative z-10 h-full w-full object-cover rounded;
+  }
+}
+
+.loading {
+  @apply absolute inset-2 flex items-center justify-center text-zinc-400 bg-zinc-700;
+}
+
+.input {
+  @apply block aspect-[4/3] p-2 rounded relative transition-colors cursor-pointer text-[13px] font-medium md:text-[14px];
+  @apply bg-primary-600 hover:bg-primary-500;
+
+  > div {
+    @apply flex items-center justify-center h-full flex-col bg-white text-primary-600 text-center leading-4 md:leading-5 rounded overflow-hidden;
+    > svg {
+      @apply h-7 w-7 mb-1 md:mb-2 md:h-8 md:w-8;
+    }
+  }
+
+  &:hover > div {
+    @apply text-primary-500;
+  }
+}
+
+.current {
+  @apply rounded p-2 bg-zinc-600 w-full h-full overflow-hidden relative block;
+
+  > img {
+    @apply relative z-10 h-full w-full object-cover rounded;
+  }
+}
+
+.actions {
+  @apply grid grid-cols-2 gap-4;
+}

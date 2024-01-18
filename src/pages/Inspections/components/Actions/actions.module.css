@@ -1,0 +1,7 @@
+.panel {
+  @apply text-center;
+}
+
+.list {
+  @apply flex flex-col w-56 m-auto gap-1;
+}

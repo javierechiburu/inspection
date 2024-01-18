@@ -1,0 +1,27 @@
+.group {
+  @apply leading-none lg:p-6;
+}
+
+.title {
+  @apply text-[16px] uppercase font-medium mb-6 lg:text-[20px] flex justify-between;
+
+  > span {
+    @apply ml-3 lg:mr-3 text-primary-600 order-last text-[14px] lg:text-[20px];
+  }
+}
+
+.container {
+  @apply grid grid-cols-1 gap-x-2.5 gap-y-4 md:grid-cols-2 lg:gap-8 xl:grid-cols-2 2xl:grid-cols-3;
+}
+
+.gallery {
+  @apply grid grid-cols-1 md:grid-cols-1 xl:grid-cols-1 2xl:grid-cols-1;
+}
+
+.actions {
+  @apply mt-6 lg:flex lg:justify-end lg:gap-4;
+
+  > button {
+    @apply w-full max-w-xs mb-2.5 lg:mb-0;
+  }
+}

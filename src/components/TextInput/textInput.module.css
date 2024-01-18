@@ -1,0 +1,12 @@
+.wrapper {
+  @apply relative inline-flex leading-none border-2 rounded h-8;
+  @apply hover:border-primary-500 focus-within:border-primary-500;
+
+  > input {
+    @apply flex-1 rounded focus:outline-none px-2;
+  }
+}
+
+.block {
+  @apply w-full;
+}

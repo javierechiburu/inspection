@@ -1,0 +1,29 @@
+.wrapper {
+  @apply inline-block;
+}
+
+.wrapper--block {
+  @apply block w-full;
+}
+
+.options {
+  @apply mt-3 grid grid-cols-2 gap-4;
+}
+
+button.button {
+  @apply border-2 rounded w-full h-8 text-[14px] font-medium transition-colors;
+}
+
+button.true {
+  @apply text-primary-500 border-primary-500 hover:bg-primary-500 hover:text-white;
+}
+button.true--active {
+  @apply bg-primary-500 text-white;
+}
+
+button.false {
+  @apply text-red-700 border-red-700 hover:bg-red-700 hover:text-white;
+}
+button.false--active {
+  @apply bg-red-700 text-white;
+}

@@ -1,0 +1,44 @@
+.modal {
+  @apply min-w-[20rem] max-w-xl;
+}
+
+.options {
+  @apply mt-3 grid grid-cols-2 gap-4 lg:grid-cols-3 lg:gap-5;
+}
+
+button.button {
+  @apply border-2 rounded w-full text-[14px] px-3 py-4 font-medium transition-colors flex items-center justify-center lg:px-4;
+}
+
+button.true {
+  @apply text-primary-500 border-primary-500 hover:bg-primary-500 hover:text-white;
+}
+button.true--active {
+  @apply bg-primary-500 text-white;
+}
+
+button.false {
+  @apply text-red-700 border-red-700 md:hover:bg-red-700 md:hover:text-white;
+}
+button.false--active {
+  @apply bg-red-700 text-white;
+}
+
+.actions {
+  @apply grid grid-cols-2 gap-4;
+}
+
+.gallery {
+  @apply mt-5;
+}
+
+.description {
+  @apply mt-5;
+
+  > label {
+    @apply text-[14px] font-medium block pb-2 leading-5;
+    > span {
+      @apply ml-1.5 text-red-700;
+    }
+  }
+}

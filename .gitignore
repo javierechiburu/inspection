@@ -1,0 +1,9 @@
+*.log
+.DS_Store
+Thumbs.db
+node_modules
+.cache
+dist
+yarn.lock
+types
+package-lock.json

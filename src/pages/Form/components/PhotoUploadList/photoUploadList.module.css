@@ -1,0 +1,51 @@
+.container {
+  @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 xl:grid-cols-3 gap-4;
+}
+
+.wrapper {
+  @apply aspect-[4/3] p-2 rounded relative;
+}
+
+.wrapper--upload {
+  @apply bg-primary-600 hover:bg-primary-500 transition-colors;
+}
+
+.label {
+  @apply bg-white rounded overflow-hidden block h-full cursor-pointer text-[14px] font-medium;
+
+  > div {
+    @apply flex items-center justify-center h-full flex-col text-primary-600;
+
+    > svg {
+      @apply h-7 w-7 mb-2;
+    }
+  }
+
+  &:hover > div > svg {
+    @apply text-primary-500;
+  }
+}
+
+.loading {
+  @apply absolute inset-0 flex items-center justify-center;
+}
+
+.wrapper--loaded {
+  @apply bg-zinc-500;
+}
+
+.image {
+  @apply rounded overflow-hidden block h-full relative text-white text-[14px] font-medium;
+
+  > img {
+    @apply z-10 relative;
+  }
+}
+
+.delete {
+  @apply absolute -top-1 -right-1 z-10 rounded-full bg-primary-600 hover:bg-primary-500 cursor-pointer text-white p-1;
+
+  > svg {
+    @apply h-4 w-4;
+  }
+}

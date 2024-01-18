@@ -1,0 +1,21 @@
+.mobile-filters {
+  @apply lg:hidden;
+}
+
+.desktop-filters {
+  @apply hidden bg-white lg:block rounded;
+}
+
+.wrapper {
+  @apply bg-white leading-none rounded;
+}
+
+.list {
+  > li {
+    @apply even:bg-zinc-50 border-b;
+  }
+}
+
+.alert {
+  @apply fixed top-4 right-1 w-auto;
+}
